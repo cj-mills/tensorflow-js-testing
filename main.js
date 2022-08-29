@@ -48,6 +48,8 @@ async function PerformInferenceAsync(session, feeds) {
 
 let mobilenet;
 
+import { IMAGENET_CLASSES } from './imagenet_classes.js';
+
 // use an async context to call onnxruntime functions.
 async function main() {
 
@@ -55,6 +57,7 @@ async function main() {
     // tf.setBackend('cpu');
     console.log(`Tensorflow.js backend: ${tf.getBackend()}`);
 
+    console.log(IMAGENET_CLASSES[0]);
 
     var image = document.getElementById('image');
     var div = document.createElement("DIV");
@@ -170,7 +173,7 @@ async function main() {
     // const end = new Date();
 
     // read from results
-    document.getElementById('output_text').innerHTML += `<br>Predicted class index: ${index - 1}`;
+    document.getElementById('output_text').innerHTML += `<br>Predicted class index: ${IMAGENET_CLASSES[index - 1]}`;
     document.getElementById('output_text').innerHTML += `<br>Preprocess Time: ${preprocess_time}ms`;
     document.getElementById('output_text').innerHTML += `<br>Inference Time: ${inference_time}ms`;
 }
