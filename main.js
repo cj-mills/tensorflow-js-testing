@@ -57,8 +57,6 @@ async function main() {
     // tf.setBackend('cpu');
     console.log(`Tensorflow.js backend: ${tf.getBackend()}`);
 
-    console.log(IMAGENET_CLASSES[0]);
-
     var image = document.getElementById('image');
     var div = document.createElement("DIV");
     div.id = 'output_text';
