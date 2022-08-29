@@ -62,23 +62,9 @@ async function main() {
     div.innerHTML = `Image Source: ${image.src}`;
     document.body.appendChild(div);
 
-    console.log('Loading model...');
-    mobilenet = await tf.loadGraphModel(MOBILENET_MODEL_PATH, { fromTFHub: true });
-    // Warmup the model. This isn't necessary, but makes the first prediction
-    // faster. Call `dispose` to release the WebGL memory allocated for the return
-    // value of `predict`.
-    console.log('Warming up model...');
-    for (let index = 0; index < 50; index++) {
-        tf.tidy(() => {
-            mobilenet.predict(tf.zeros([1, IMAGE_SIZE, IMAGE_SIZE, 3])).dispose();
-        });
-    }
 
-    console.log('');
-
-
-    // var model_dir = './models';
-    // var model_path = `${model_dir}/asl-and-some-words-mobilenetv2_050.onnx`;
+    var model_dir = './models/imagenet_mobilenet_v2_100_224_classification_1_default_1';
+    var model_path = `${model_dir}/model.json`;
     // var exec_provider = 'wasm';
     // var return_msg = await init_session(model_path, exec_provider);
     // document.getElementById('output_text').innerHTML += `<br>${(return_msg).toString()}`;
@@ -87,6 +73,28 @@ async function main() {
     // })
 
     // console.log(`Input Name: ${session.inputNames[0]}`);
+
+
+    console.log('Loading model...');
+    // mobilenet = await tf.loadGraphModel(MOBILENET_MODEL_PATH, { fromTFHub: true });
+    mobilenet = await tf.loadGraphModel(model_path, { fromTFHub: false });
+    const input_shape = mobilenet.inputs[0].shape;
+    const height = input_shape[1];
+    const width = input_shape[2];
+    // const height = image.height;
+    // const width = image.width;
+    console.log(`Input Shape: ${mobilenet.inputs[0].shape}`);
+    // Warmup the model. This isn't necessary, but makes the first prediction
+    // faster. Call `dispose` to release the WebGL memory allocated for the return
+    // value of `predict`.
+    console.log('Warming up model...');
+    for (let index = 0; index < 50; index++) {
+        tf.tidy(() => {
+            mobilenet.predict(tf.zeros([1, height, width, 3])).dispose();
+        });
+    }
+
+    console.log('');
 
     var canvas = document.createElement("CANVAS");
     var context = canvas.getContext('2d');
@@ -143,7 +151,7 @@ async function main() {
 
         const float32Data = Float32Array.from(input_array);
 
-        const shape = [1, image.height, image.width, 3];
+        const shape = [1, height, width, 3];
         const input_tensor = tf.tensor(float32Data, shape, 'float32');
 
         // Reshape to a single-element batch so we can pass it to predict.
