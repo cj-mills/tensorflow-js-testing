@@ -1,9 +1,9 @@
 
-const MOBILENET_MODEL_PATH =
-    // tslint:disable-next-line:max-line-length
-    'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/classification/3/default/1';
+// const MOBILENET_MODEL_PATH =
+//     // tslint:disable-next-line:max-line-length
+//     'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/classification/3/default/1';
 
-const IMAGE_SIZE = 224;
+// const IMAGE_SIZE = 224;
 
 // The mean of the ImageNet dataset used to train the model
 const mean = [0.485, 0.456, 0.406];
@@ -65,15 +65,6 @@ async function main() {
 
     var model_dir = './models/imagenet_mobilenet_v2_100_224_classification_3_default_1';
     var model_path = `${model_dir}/model.json`;
-    // var exec_provider = 'wasm';
-    // var return_msg = await init_session(model_path, exec_provider);
-    // document.getElementById('output_text').innerHTML += `<br>${(return_msg).toString()}`;
-    // init_session(model_path, exec_provider).then(return_msg => {
-    // document.getElementById('output_text').innerHTML += `<br>${(return_msg).toString()}`;
-    // })
-
-    // console.log(`Input Name: ${session.inputNames[0]}`);
-
 
     console.log('Loading model...');
     // mobilenet = await tf.loadGraphModel(MOBILENET_MODEL_PATH, { fromTFHub: true });
@@ -93,8 +84,6 @@ async function main() {
             mobilenet.predict(tf.zeros([1, height, width, 3])).dispose();
         });
     }
-
-    console.log('');
 
     var canvas = document.createElement("CANVAS");
     var context = canvas.getContext('2d');
@@ -134,6 +123,7 @@ async function main() {
     // feeds[session.inputNames[0]] = input_tensor;
 
 
+    console.log('Performing inference...');
     const offset = tf.scalar(127.5);
     let inference_start;
     let preprocess_end;
