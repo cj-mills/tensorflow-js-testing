@@ -63,7 +63,7 @@ async function main() {
     document.body.appendChild(div);
 
 
-    var model_dir = './models/imagenet_mobilenet_v2_100_224_classification_1_default_1';
+    var model_dir = './models/imagenet_mobilenet_v2_100_224_classification_3_default_1';
     var model_path = `${model_dir}/model.json`;
     // var exec_provider = 'wasm';
     // var return_msg = await init_session(model_path, exec_provider);
