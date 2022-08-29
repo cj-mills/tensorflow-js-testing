@@ -95,36 +95,8 @@ async function main() {
     context.drawImage(image, 0, 0);
     var imageData = context.getImageData(0, 0, image.width, image.height);
 
-    // The first start time includes the time it takes to extract the image
-    // from the HTML and preprocess it, in additon to the predict() call.
-    const startTime1 = performance.now();
-    // The second start time excludes the extraction and preprocessing and
-    // includes only the predict() call.
-    let startTime2;
-    const outputData = tf.tidy(() => {
-        // tf.browser.fromPixels() returns a Tensor from an image element.
-        const img = tf.cast(tf.browser.fromPixels(image), 'float32');
-
-        const offset = tf.scalar(127.5);
-        // Normalize the image from [0, 255] to [-1, 1].
-        const normalized = img.sub(offset).div(offset);
-
-        // Reshape to a single-element batch so we can pass it to predict.
-        const batched = normalized.reshape([1, IMAGE_SIZE, IMAGE_SIZE, 3]);
-
-        startTime2 = performance.now();
-        // Make a prediction through mobilenet.
-        return mobilenet.predict(batched);
-    });
-    const totalTime2 = performance.now() - startTime2;
-    const output = await outputData.data();
-    // console.log(output);
-    // results = softmax(Array.prototype.slice.call(output));
-    // console.log(results);
-    var index = argMax(Array.prototype.slice.call(output));
-
     // 1. Get buffer data from image.
-    // var imageBufferData = imageData.data;
+    var imageBufferData = imageData.data;
     // console.log(`RGBA Data: ${imageBufferData}`);
 
     // console.time('Preprocessing');
@@ -141,14 +113,53 @@ async function main() {
     //     // skip data[i + 3] to filter out the alpha channel
     // }
 
-    // 3. Concatenate RGB to transpose [224, 224, 3] -> [3, 224, 224] to a number array
     // const float32Data = Float32Array.from(redArray.concat(greenArray).concat(blueArray));
+    // console.log(`Float Data: ${float32Data}`);
     // console.timeEnd('Preprocessing');
+
+    // const input = input_tensor.reshape(shape);
+    // console.log(input);
 
     // 5. create the tensor object from onnxruntime-web.
     // const input_tensor = new ort.Tensor("float32", float32Data, [1, 3, image.height, image.width]);
     // const feeds = {};
     // feeds[session.inputNames[0]] = input_tensor;
+
+
+    const offset = tf.scalar(127.5);
+    let inference_start;
+    let preprocess_end;
+    const preprocess_start = new Date();
+    const outputData = tf.tidy(() => {
+
+        const offset_val = 127.5;
+        const [input_array] = new Array(new Array());
+        for (let i = 0; i < imageBufferData.length; i += 4) {
+            input_array.push(((imageBufferData[i]) - offset_val) / offset_val);
+            input_array.push(((imageBufferData[i + 1]) - offset_val) / offset_val);
+            input_array.push(((imageBufferData[i + 2]) - offset_val) / offset_val);
+            // skip data[i + 3] to filter out the alpha channel
+        }
+
+        const float32Data = Float32Array.from(input_array);
+
+        const shape = [1, image.height, image.width, 3];
+        const input_tensor = tf.tensor(float32Data, shape, 'float32');
+
+        // Reshape to a single-element batch so we can pass it to predict.
+        preprocess_end = new Date();
+
+        inference_start = new Date();
+        // Make a prediction through mobilenet.
+        return mobilenet.predict(input_tensor);
+    });
+    const preprocess_time = preprocess_end - preprocess_start;
+    const inference_time = new Date() - inference_start;
+    const output = await outputData.data();
+    // console.log(output);
+    // results = softmax(Array.prototype.slice.call(output));
+    // console.log(results);
+    var index = argMax(Array.prototype.slice.call(output));
 
     // feed inputs and run
     // const start = new Date();
@@ -160,12 +171,10 @@ async function main() {
     // })
     // const end = new Date();
 
-    const totalTime1 = performance.now() - startTime1;
-    // const totalTime2 = performance.now() - startTime2;
-
     // read from results
     document.getElementById('output_text').innerHTML += `<br>Predicted class index: ${index - 1}`;
-    document.getElementById('output_text').innerHTML += `<br>Inference Time: ${totalTime2}ms`;
+    document.getElementById('output_text').innerHTML += `<br>Preprocess Time: ${preprocess_time}ms`;
+    document.getElementById('output_text').innerHTML += `<br>Inference Time: ${inference_time}ms`;
 }
 
 main();
