@@ -53,7 +53,8 @@ import { IMAGENET_CLASSES } from './imagenet_classes.js';
 // use an async context to call onnxruntime functions.
 async function main() {
 
-    tf.setBackend('webgl');
+    await tf.setBackend('webgl');
+    // await tf.setBackend('wasm');
     // tf.setBackend('cpu');
     console.log(`Tensorflow.js backend: ${tf.getBackend()}`);
 
@@ -64,7 +65,7 @@ async function main() {
     document.body.appendChild(div);
 
 
-    var model_dir = './models/imagenet_mobilenet_v2_100_224_classification_3_default_1';
+    var model_dir = './models/imagenet_mobilenet_v2_100_224';
     var model_path = `${model_dir}/model.json`;
 
     console.log('Loading model...');
