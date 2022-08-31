@@ -48,7 +48,8 @@ async function PerformInferenceAsync(session, feeds) {
 
 let mobilenet;
 
-import { IMAGENET_CLASSES } from './imagenet_classes.js';
+// import { IMAGENET_CLASSES } from './imagenet_classes.js';
+import { HAGRID_CLASSES } from './hagrid_classes.js';
 
 // use an async context to call onnxruntime functions.
 async function main() {
@@ -65,17 +66,18 @@ async function main() {
     document.body.appendChild(div);
 
 
-    var model_dir = './models/imagenet_mobilenet_v2_100_224';
+    var model_dir = './models/hagrid-sample-250k-384p-convnext_nano-tfjs';
+    // var model_dir = './models/hagrid-sample-250k-384p-resnet18-tfjs';
     var model_path = `${model_dir}/model.json`;
 
     console.log('Loading model...');
     // mobilenet = await tf.loadGraphModel(MOBILENET_MODEL_PATH, { fromTFHub: true });
     mobilenet = await tf.loadGraphModel(model_path, { fromTFHub: false });
     const input_shape = mobilenet.inputs[0].shape;
-    const height = input_shape[1];
-    const width = input_shape[2];
-    // const height = image.height;
-    // const width = image.width;
+    // const height = input_shape[1];
+    // const width = input_shape[2];
+    const height = image.height;
+    const width = image.width;
     console.log(`Input Shape: ${mobilenet.inputs[0].shape}`);
     // Warmup the model. This isn't necessary, but makes the first prediction
     // faster. Call `dispose` to release the WebGL memory allocated for the return
@@ -83,7 +85,8 @@ async function main() {
     console.log('Warming up model...');
     for (let index = 0; index < 50; index++) {
         tf.tidy(() => {
-            mobilenet.predict(tf.zeros([1, height, width, 3])).dispose();
+            // mobilenet.predict(tf.zeros([1, height, width, 3])).dispose();
+            mobilenet.predict(tf.zeros([1, 3, height, width])).dispose();
         });
     }
 
@@ -132,18 +135,30 @@ async function main() {
     const preprocess_start = new Date();
     const outputData = tf.tidy(() => {
 
-        const offset_val = 127.5;
-        const [input_array] = new Array(new Array());
+        // const offset_val = 127.5;
+        // const [input_array] = new Array(new Array());
+        // for (let i = 0; i < imageBufferData.length; i += 4) {
+        //     input_array.push(((imageBufferData[i]) - offset_val) / offset_val);
+        //     input_array.push(((imageBufferData[i + 1]) - offset_val) / offset_val);
+        //     input_array.push(((imageBufferData[i + 2]) - offset_val) / offset_val);
+        //     // skip data[i + 3] to filter out the alpha channel
+        // }
+        // const float32Data = Float32Array.from(input_array);
+        // const shape = [1, height, width, 3];
+
+        const [redArray, greenArray, blueArray] = new Array(
+            new Array(),
+            new Array(),
+            new Array());
         for (let i = 0; i < imageBufferData.length; i += 4) {
-            input_array.push(((imageBufferData[i]) - offset_val) / offset_val);
-            input_array.push(((imageBufferData[i + 1]) - offset_val) / offset_val);
-            input_array.push(((imageBufferData[i + 2]) - offset_val) / offset_val);
+            redArray.push(((imageBufferData[i] / 255.0) - mean[0]) / std_dev[0]);
+            greenArray.push(((imageBufferData[i + 1] / 255.0) - mean[1]) / std_dev[1]);
+            blueArray.push(((imageBufferData[i + 2] / 255.0) - mean[2]) / std_dev[2]);
             // skip data[i + 3] to filter out the alpha channel
         }
+        const float32Data = Float32Array.from(redArray.concat(greenArray).concat(blueArray));
+        const shape = [1, 3, height, width];
 
-        const float32Data = Float32Array.from(input_array);
-
-        const shape = [1, height, width, 3];
         const input_tensor = tf.tensor(float32Data, shape, 'float32');
 
         // Reshape to a single-element batch so we can pass it to predict.
@@ -172,7 +187,7 @@ async function main() {
     // const end = new Date();
 
     // read from results
-    document.getElementById('output_text').innerHTML += `<br>Predicted class index: ${IMAGENET_CLASSES[index - 1]}`;
+    document.getElementById('output_text').innerHTML += `<br>Predicted class index: ${HAGRID_CLASSES[index]}`;
     document.getElementById('output_text').innerHTML += `<br>Preprocess Time: ${preprocess_time}ms`;
     document.getElementById('output_text').innerHTML += `<br>Inference Time: ${inference_time}ms`;
 }

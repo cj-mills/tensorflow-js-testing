@@ -1,0 +1,20 @@
+export const HAGRID_CLASSES = {
+    0: "call",
+    1: "dislike",
+    2: "fist",
+    3: "four",
+    4: "like",
+    5: "mute",
+    6: "ok",
+    7: "one",
+    8: "palm",
+    9: "peace",
+    10: "peace_inverted",
+    11: "rock",
+    12: "stop",
+    13: "stop_inverted",
+    14: "three",
+    15: "three2",
+    16: "two_up",
+    17: "two_up_inverted"
+};
