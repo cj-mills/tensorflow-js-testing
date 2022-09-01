@@ -46,7 +46,7 @@ async function PerformInferenceAsync(session, feeds) {
 }
 
 
-let mobilenet;
+let model;
 
 // import { IMAGENET_CLASSES } from './imagenet_classes.js';
 import { HAGRID_CLASSES } from './hagrid_classes.js';
@@ -72,13 +72,13 @@ async function main() {
 
     console.log('Loading model...');
     // mobilenet = await tf.loadGraphModel(MOBILENET_MODEL_PATH, { fromTFHub: true });
-    mobilenet = await tf.loadGraphModel(model_path, { fromTFHub: false });
-    const input_shape = mobilenet.inputs[0].shape;
+    model = await tf.loadGraphModel(model_path, { fromTFHub: false });
+    const input_shape = model.inputs[0].shape;
     // const height = input_shape[1];
     // const width = input_shape[2];
     const height = image.height;
     const width = image.width;
-    console.log(`Input Shape: ${mobilenet.inputs[0].shape}`);
+    console.log(`Input Shape: ${model.inputs[0].shape}`);
     // Warmup the model. This isn't necessary, but makes the first prediction
     // faster. Call `dispose` to release the WebGL memory allocated for the return
     // value of `predict`.
@@ -86,7 +86,7 @@ async function main() {
     for (let index = 0; index < 50; index++) {
         tf.tidy(() => {
             // mobilenet.predict(tf.zeros([1, height, width, 3])).dispose();
-            mobilenet.predict(tf.zeros([1, 3, height, width])).dispose();
+            model.predict(tf.zeros([1, 3, height, width])).dispose();
         });
     }
 
@@ -166,14 +166,14 @@ async function main() {
 
         inference_start = new Date();
         // Make a prediction through mobilenet.
-        return mobilenet.predict(input_tensor);
+        return model.predict(input_tensor);
     });
     const preprocess_time = preprocess_end - preprocess_start;
     const inference_time = new Date() - inference_start;
     const output = await outputData.data();
     // console.log(output);
-    // results = softmax(Array.prototype.slice.call(output));
-    // console.log(results);
+    var results = softmax(Array.prototype.slice.call(output));
+    console.log(results);
     var index = argMax(Array.prototype.slice.call(output));
 
     // feed inputs and run
