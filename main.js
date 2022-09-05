@@ -91,15 +91,14 @@ async function main() {
         const shape = [1, height, width, 3];
         // Initialize input tensor
         const input_tensor = tf.tensor(float32Data, shape, 'float32');
-
         preprocess_end = new Date();
 
-        inference_start = new Date();
         // Make a prediction through model.
+        inference_start = new Date();
         return model.predict(input_tensor);
     });
-    const preprocess_time = preprocess_end - preprocess_start;
     const inference_time = new Date() - inference_start;
+    const preprocess_time = preprocess_end - preprocess_start;
     const output = await outputData.data();
     var results = softmax(Array.prototype.slice.call(output));
     console.log(results);
