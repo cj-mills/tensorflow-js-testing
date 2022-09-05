@@ -48,14 +48,11 @@ async function main() {
     model = await tf.loadGraphModel(model_path, { fromTFHub: false });
 
     const input_shape = model.inputs[0].shape;
-    // const height = input_shape[1];
-    // const width = input_shape[2];
-    const height = image.height;
-    const width = image.width;
+    const height = input_shape[1] == -1 ? image.height : input_shape[1];
+    const width = input_shape[2] == -1 ? image.width : input_shape[2];
     console.log(`Input Shape: ${model.inputs[0].shape}`);
 
     // Warmup the model when using WebGL backend.
-
     if (tf.getBackend() == 'webgl') {
         document.getElementById('output_text').innerHTML += `<br>Warming up webgl backend...`;
         for (let index = 0; index < 50; index++) {
