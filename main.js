@@ -87,12 +87,11 @@ async function main() {
             input_array.push(((imageBufferData[i + 2] / 255.0) - mean[2]) / std_dev[2]);
         }
         const float32Data = Float32Array.from(input_array);
+        // Reshape to a single-element batch so we can pass it to predict.
         const shape = [1, height, width, 3];
-
-
+        // Initialize input tensor
         const input_tensor = tf.tensor(float32Data, shape, 'float32');
 
-        // Reshape to a single-element batch so we can pass it to predict.
         preprocess_end = new Date();
 
         inference_start = new Date();
@@ -102,13 +101,13 @@ async function main() {
     const preprocess_time = preprocess_end - preprocess_start;
     const inference_time = new Date() - inference_start;
     const output = await outputData.data();
-    // console.log(output);
     var results = softmax(Array.prototype.slice.call(output));
     console.log(results);
     var index = argMax(Array.prototype.slice.call(output));
 
     // read from results
-    document.getElementById('output_text').innerHTML += `<br>Predicted class index: ${HAGRID_CLASSES[index]}`;
+    var pred_string = `${HAGRID_CLASSES[index]} ${(results[index] * 100.0).toPrecision(5)}%`;
+    document.getElementById('output_text').innerHTML += `<br>Predicted class index: ${pred_string}`;
     document.getElementById('output_text').innerHTML += `<br>Preprocess Time: ${preprocess_time}ms`;
     document.getElementById('output_text').innerHTML += `<br>Inference Time: ${inference_time}ms`;
 }
