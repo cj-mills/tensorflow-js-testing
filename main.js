@@ -21,13 +21,6 @@ function softmax(resultArray) {
     });
 }
 
-async function PerformInferenceAsync(session, feeds) {
-
-    const outputData = await session.run(feeds);
-    return outputData;
-}
-
-
 let model;
 
 // import { IMAGENET_CLASSES } from './imagenet_classes.js';
@@ -49,11 +42,9 @@ async function main() {
     var model_dir = './models/hagrid-sample-250k-384p-convnext_nano-opset15-tfjs';
     // var model_dir = './models/hagrid-sample-250k-384p-resnet18-opset15-tfjs';
     // var model_dir = './models/hagrid-sample-250k-384p-mobilenetv2_100-opset15-tfjs';
-    // var model_dir = './models/hagrid-sample-250k-384p-mobilevitv2_050-opset15-tfjs';
     var model_path = `${model_dir}/model.json`;
 
     document.getElementById('output_text').innerHTML += `<br>Loading model...`;
-    // model = await tf.loadGraphModel(model_MODEL_PATH, { fromTFHub: true });
     model = await tf.loadGraphModel(model_path, { fromTFHub: false });
 
     const input_shape = model.inputs[0].shape;
@@ -64,13 +55,17 @@ async function main() {
     console.log(`Input Shape: ${model.inputs[0].shape}`);
 
     // Warmup the model when using WebGL backend.
-    document.getElementById('output_text').innerHTML += `<br>Warming up model...`;
-    for (let index = 0; index < 50; index++) {
-        tf.tidy(() => {
-            // Channels-last format
-            model.predict(tf.zeros([1, height, width, 3])).dispose();
-        });
+
+    if (tf.getBackend() == 'webgl') {
+        document.getElementById('output_text').innerHTML += `<br>Warming up webgl backend...`;
+        for (let index = 0; index < 50; index++) {
+            tf.tidy(() => {
+                // Channels-last format
+                model.predict(tf.zeros([1, height, width, 3])).dispose();
+            });
+        }
     }
+
 
     var canvas = document.createElement("CANVAS");
     var context = canvas.getContext('2d');
