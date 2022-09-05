@@ -52,7 +52,7 @@ async function main() {
     // var model_dir = './models/hagrid-sample-250k-384p-mobilevitv2_050-opset15-tfjs';
     var model_path = `${model_dir}/model.json`;
 
-    console.log('Loading model...');
+    document.getElementById('output_text').innerHTML += `<br>Loading model...`;
     // model = await tf.loadGraphModel(model_MODEL_PATH, { fromTFHub: true });
     model = await tf.loadGraphModel(model_path, { fromTFHub: false });
 
@@ -64,7 +64,7 @@ async function main() {
     console.log(`Input Shape: ${model.inputs[0].shape}`);
 
     // Warmup the model when using WebGL backend.
-    console.log('Warming up model...');
+    document.getElementById('output_text').innerHTML += `<br>Warming up model...`;
     for (let index = 0; index < 50; index++) {
         tf.tidy(() => {
             // Channels-last format
