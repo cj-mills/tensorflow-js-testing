@@ -4,11 +4,6 @@ const mean = [0.485, 0.456, 0.406];
 // The standard deviation of the ImageNet dataset used to train the model
 const std_dev = [0.229, 0.224, 0.225];
 
-
-function argMax(array) {
-    return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
-}
-
 //The softmax transforms values to be between 0 and 1
 function softmax(resultArray) {
     // Get the largest value in the array.
@@ -19,6 +14,10 @@ function softmax(resultArray) {
     return resultArray.map((resultValue, index) => {
         return Math.exp(resultValue - largestNumber) / sumOfExp;
     });
+}
+
+function argMax(array) {
+    return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
 }
 
 let model;
@@ -74,7 +73,7 @@ async function main() {
     // Get buffer data from image.
     var imageBufferData = imageData.data;
 
-    console.log('Performing inference...');
+    document.getElementById('output_text').innerHTML += `<br>Performing inference...`;
     let inference_start;
     let preprocess_end;
     const preprocess_start = new Date();
