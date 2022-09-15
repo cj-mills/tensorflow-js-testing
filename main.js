@@ -95,10 +95,7 @@ function generate_yolox_proposals(model_output, proposal_length, grid_strides, b
         if (obj['prob'] > bbox_conf_thresh) { proposals.push(obj); }
     }
 
-
-
     // Sort the proposals based on the confidence score in descending order
-    // proposals.sort(key=lambda x:x['prob'], reverse=True)
     proposals.sort(function (a, b) {
         return parseFloat(b.prob) - parseFloat(a.prob);
     })
@@ -123,14 +120,13 @@ function calc_inter_area(a, b) {
 
 function nms_sorted_boxes(proposals, nms_thresh = 0.45) {
     let proposal_indices = new Array();
-    // console.log(`Num proposals: ${proposals.length}`);
+
     // Iterate through the object proposals
     for (let i = 0; i < proposals.length; i++) {
         const a = proposals[i];
-        // console.log(a);
 
         let keep = true;
-        // console.log(i);
+
         // Check if the current object proposal overlaps any selected objects too much
         for (const j of proposal_indices) {
             const b = proposals[j];
@@ -172,7 +168,6 @@ async function main() {
     div.id = 'output_text';
     div.innerHTML = `Image Source: ${image.src}`;
     document.body.appendChild(div);
-
 
     // var model_dir = './models/hagrid-sample-250k-384p-convnext_nano-opset15-tfjs';
     // var model_dir = './models/hagrid-sample-250k-384p-resnet18-opset15-tfjs';
@@ -242,18 +237,9 @@ async function main() {
             input_array.push(((imageBufferData[i + 2] / 255.0) - mean[2]) / std_dev[2]);
         }
 
-        // const diff = ((height + 1) * (width + 1) * 3) - input_array.length;
-        // console.log(diff);
-        // for (let i = 0; i < diff; i++) {
-        //     input_array.push(0);
-        //     // input_array.push(0);
-        //     // input_array.push(0);
-        // }
-
         const float32Data = Float32Array.from(input_array);
         // Reshape to a single-element batch so we can pass it to predict.
         const shape = [1, height, width, 3];
-        // const shape = [1, height + 1, width + 1, 3];
 
         // Initialize input tensor
         const input_tensor = tf.tensor(float32Data, shape, 'float32');
@@ -271,10 +257,7 @@ async function main() {
     const output = await outputData.data();
     console.log(output);
     let proposals = generate_yolox_proposals(output, outputData.shape[2], grid_strides, 0.5);
-    // proposals.forEach(e => {
-    //     console.log(e);
-    // })
-    // console.log('\n\n');
+
     const proposal_indices = nms_sorted_boxes(proposals);
     for (let i = 0; i < proposals.length; i++) {
         if (proposal_indices.includes(i)) {
@@ -300,5 +283,4 @@ async function main() {
     document.body.appendChild(canvas);
 }
 
-// tf.setBackend('webgpu').then(() => main());
 main();
